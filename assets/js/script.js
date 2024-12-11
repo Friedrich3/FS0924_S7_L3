@@ -16,7 +16,7 @@ document.addEventListener("load", init());
 
 function init() {
     recoverData();
-
+    printCart();
 };
 
 
@@ -31,7 +31,7 @@ async function recoverData() {
         return dati;
     }).then(function (dati) {                   //ENTRA COME PARAMETRO IL RETURN DEL .THEN PRECEDENTE E ESEgue il codice nella funzione
         arrayUrl = dati;                        //Popola l'array vuoto con tutto la risposta trasformata in JSON ottenuta tramite la get
-        console.log(arrayUrl);
+        //console.log(arrayUrl);
         createCard();                           //CHIAMA LA FUNZIONE CHE CREERA' LE CARD   
     }).catch(function () {
         console.log("ERRORE ");
@@ -59,14 +59,14 @@ function createCard() {
         newTitle.setAttribute("class", "card-title");                   //ERA MEGLIO USARE TUTTI INNER HTML PER RISPARMIARE CODICE
         newTitle.innerText = arrayUrl[i].title;
 
-        newCategory.setAttribute("class", "badge rounded-pill bg-black");  
+        newCategory.setAttribute("class", "badge rounded-pill bg-black");
         newCategory.innerText = arrayUrl[i].category;
 
         newPrice.setAttribute("class", "card-text")
         newPrice.innerText = `PRICE: ${arrayUrl[i].price}€`;
 
         btnBuy.setAttribute("class", "btn btn-outline-success");
-        btnBuy.setAttribute("onclick",`buyItem(${arrayAsin.toString()})`)
+        btnBuy.setAttribute("onclick", `buyItem(${(i)})`)
         btnBuy.innerText = "Buy Now";
 
         btnDelete.setAttribute("class", "btn btn-outline-danger");
@@ -99,47 +99,82 @@ function deleteItem(value) {
 }
 
 
-function buyItem(asin){
+function buyItem(elemento) {
+    let localJson = [];
+    let selectedObject = { ...arrayUrl[elemento] };
+
+    if (!localStorage.getItem("CART")) {
+        //.log("enterTRUE");
+        localJson.push(selectedObject);
+        //.log(localJson);
+        localStorage.setItem("CART", JSON.stringify(localJson));
+        printCart();
+    } else {
+        //.log("enterFalse");
+        let data = JSON.parse(localStorage.getItem("CART"));
+        localJson = data;
+        localJson.push(selectedObject);
+        //console.log(localJson);
+        localStorage.setItem("CART", JSON.stringify(localJson));
+        printCart();
+    };
+
+};
+
+function printCart() {
     let cartShoppingList = document.getElementById("cartShoppingList");
     let cardWrapper = document.createElement("div");
-    let selectedObject;
+    let localJson = [];
 
-    
-    arrayUrl.forEach(element => {
-        if(element.asign == asin){
-            selectedObject = {...element};
-        }
-        return;
-    });
-
-    console.log(selectedObject);
-
-
+    localJson = JSON.parse(localStorage.getItem("CART"));
+    for(let i = 0; i< localJson.length; i++){
+    cardWrapper.setAttribute("id",`cardWrapper${i}`)
     cardWrapper.innerHTML = `
-                <div id="cardWrapper">
-                <div class="card mb-3 border-1 rounded-0">
-                  <div class="row g-0">
-                    <div class="card-body">
-                      <div class="row">
-                        <img
-                          src="${asin}"
-                          class="img-fluid rounded-start col-4"
-                          alt="..."
-                        />
-                        <p class="card-title fw-bold col-8">${asin}</p>
-                      </div>
-                    </div>
-                    <div class="card-footer bg-transparent d-flex justify-content-between">
-                      <p class="card-text">PREZZO:${asin}€</p>
-                      <button type="button" class="btn bg-body-secondary">
-                        <i class="bi bi-trash"></i>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                </div> `
+                 <div>
+                 <div class="card mb-3 border-1 rounded-0">
+                   <div class="row g-0">
+                     <div class="card-body">
+                       <div class="row">
+                         <img
+                           src="${localJson[i].img}"
+                           class="img-fluid rounded-start col-4"
+                           alt="FotoCopertinaLibro"
+                         />
+                         <p class="card-title fw-bold col-8">${localJson[i].title}</p>
+                       </div>
+                     </div>
+                     <div class="card-footer bg-transparent d-flex justify-content-between">
+                       <p class="card-text">PREZZO:${localJson[i].price}€</p>
+                       <button type="button" class="btn bg-body-secondary" id="button${i}">
+                         <i class="bi bi-trash"></i>
+                       </button>
+                     </div>
+                   </div>
+                 </div>
+                 </div> `;
+    let button = document.getElementById(`button${i}`);
+    cardWrapper.setAttribute("id",`cardWrapper${i}`);
+
     cartShoppingList.appendChild(cardWrapper);
+};
+};
+
+function deleteCartItem(idcard){
+    let id = document.getElementById(idcard);
+    console.log(id);
+    
+    //toDelete.remove();    
+
 }
+
+function deleteAllCart(e){
+    e.preventDefault();
+    let cartShoppingList = document.getElementById("cartShoppingList");
+    cartShoppingList.innerHTML= "";
+    localStorage.removeItem("CART");
+};
+
+
 
 
 
